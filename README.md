@@ -1,35 +1,42 @@
-# DL- Convolutional Autoencoder for Image Denoising
+# Ex-07:DL- Convolutional Autoencoder for Image Denoising
 
 ## AIM
 To develop a convolutional autoencoder for image denoising application.
 
+## THEORY
+This code implements a **Denoising Autoencoder** using PyTorch to clean noisy images from the MNIST dataset. It uses a convolutional neural network architecture, where the encoder compresses the input image into a lower-dimensional representation, and the decoder reconstructs the original image from this compressed form. To train the model to remove noise, Gaussian noise is added to the clean images, and the network learns to recover the original from the noisy version. The training process uses **Mean Squared Error (MSE)** as the loss function to measure the reconstruction error and the **Adam optimizer** to update the model weights. The autoencoder is trained over multiple epochs using mini-batches of data for efficiency. After training, the model's performance is visually evaluated by displaying the original, noisy, and denoised images side by side.
+
+
+
+## Neural Network Model
+Include the neural network model diagram.
+
 ## DESIGN STEPS
 ### STEP 1: 
-Load MNIST data and add noise to images.
+Problem Understanding and Dataset Selection
 
 ### STEP 2: 
-Build a convolutional autoencoder.
-
+ Preprocessing the Dataset
+ 
 ### STEP 3: 
-Train the model with noisy images, minimizing MSE loss.
+Design the Convolutional Autoencoder Architecture
 
 ### STEP 4: 
-Update weights using backpropagation.
+Compile and Train the Model
 
 ### STEP 5: 
-Test the model and visualize original, noisy, and denoised images.
+Evaluate the Model
 
 ### STEP 6: 
-Repeat through multiple epochs for better denoising performance.
+Visualization and Analysis
+
 ## PROGRAM
 
-### Name: Preethi S
+### Name: PREETHI S
 
 ### Register Number: 212223230157
 
 ```python
-# Autoencoder for Image Denoising using PyTorch
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -59,64 +66,67 @@ def add_noise(inputs, noise_factor=0.5):
     noisy = inputs + noise_factor * torch.randn_like(inputs)
     return torch.clamp(noisy, 0., 1.)
 
-# Define Autoencoder
+# Denoising Autoencoder model
 class DenoisingAutoencoder(nn.Module):
     def __init__(self):
         super(DenoisingAutoencoder, self).__init__()
-        self.encoder=nn.Sequential(
-            nn.Conv2d(1,16,kernel_size=3,stride=2,padding=1),
+
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1),  # [B, 16, 14, 14]
             nn.ReLU(),
-            nn.Conv2d(16,32,kernel_size=3,stride=2,padding=1),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1), # [B, 32, 7, 7]
             nn.ReLU()
         )
-        self.decoder=nn.Sequential(
-            nn.ConvTranspose2d(32,16,kernel_size=3,stride=2,output_padding=1,padding=1),
+
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(32, 16, kernel_size=3, stride=2, padding=1, output_padding=1),  # [B, 16, 14, 14]
             nn.ReLU(),
-            nn.ConvTranspose2d(16,1,kernel_size=3,stride=2,output_padding=1,padding=1),
+            nn.ConvTranspose2d(16, 1, kernel_size=3, stride=2, padding=1, output_padding=1),   # [B, 1, 28, 28]
             nn.Sigmoid()
         )
+
     def forward(self, x):
-        x=self.encoder(x)
-        x=self.decoder(x)
+        x = self.encoder(x)
+        x = self.decoder(x)
         return x
 
-
-
-# Initialize model
-model =DenoisingAutoencoder().to(device)
-criterion =nn.MSELoss()
-optimizer =optim.Adam(model.parameters(),lr=1e-3)
+# Initialize model, loss function and optimizer
+model = DenoisingAutoencoder().to(device)
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 # Print model summary
-print("Name: T.Roshini")
-print("Register number: 212223230175")
 summary(model, input_size=(1, 28, 28))
 
 # Train the autoencoder
 def train(model, loader, criterion, optimizer, epochs=5):
     model.train()
-    print("Name: T.Roshini")
-    print("Register number: 212223230175")
+
     for epoch in range(epochs):
-      running_loss=0.0
-      for images,_ in loader:
-        images=images.to(device)
-        noisy_images=add_noise(images).to(device)
+        running_loss = 0.0
 
-        outputs=model(noisy_images)
-        loss=criterion(outputs,images)
+        for images, _ in loader:
+            images = images.to(device)
+            noisy_images = add_noise(images).to(device)
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+            # Forward pass
+            outputs = model(noisy_images)
+            loss = criterion(outputs, images)
 
-        running_loss+=loss.item()
-      print(f"Epoch [{epoch+1}/{epochs}],Loss: {running_loss/len(loader):.4f}")
+            # Backward pass and optimization
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+
+        print(f"Epoch [{epoch+1}/{epochs}], Loss: {running_loss/len(loader):.4f}")
 
 
 # Evaluate and visualize
 def visualize_denoising(model, loader, num_images=10):
     model.eval()
+
     with torch.no_grad():
         for images, _ in loader:
             images = images.to(device)
@@ -128,9 +138,8 @@ def visualize_denoising(model, loader, num_images=10):
     noisy_images = noisy_images.cpu().numpy()
     outputs = outputs.cpu().numpy()
 
-    print("Name: T.Roshini")
-    print("Register Number: 212223230175")
     plt.figure(figsize=(18, 6))
+
     for i in range(num_images):
         # Original
         ax = plt.subplot(3, num_images, i + 1)
@@ -153,25 +162,25 @@ def visualize_denoising(model, loader, num_images=10):
     plt.tight_layout()
     plt.show()
 
+
 # Run training and visualization
 train(model, train_loader, criterion, optimizer, epochs=5)
 visualize_denoising(model, test_loader)
-
 
 ```
 
 ### OUTPUT
 
 ### Model Summary
-<img width="486" height="366" alt="image" src="https://github.com/user-attachments/assets/64f081da-ca23-4b8f-96eb-0976fe6aea43" />
+<img width="566" height="372" alt="image" src="https://github.com/user-attachments/assets/161a021a-5ee3-473d-91eb-90a98c6ec84f" />
 
 
 ### Training loss
-<img width="267" height="60" alt="image" src="https://github.com/user-attachments/assets/1161e9bd-451d-4113-bc4c-17f0209483b3" />
+<img width="247" height="88" alt="image" src="https://github.com/user-attachments/assets/03a31548-8e11-457d-acfa-e851efb52cb4" />
 
 ## Original vs Noisy Vs Reconstructed Image
-<img width="907" height="331" alt="image" src="https://github.com/user-attachments/assets/7ed34031-b41e-4f50-8848-53ab902da098" />
+<img width="1811" height="581" alt="image" src="https://github.com/user-attachments/assets/d6e9094b-df39-4ebc-b496-172da6a1b9e5" />
 
 
 ## RESULT
-Thus, a convolutional autoencoder for image denoising application has been developed.
+Therefore, To develop a convolutional autoencoder for image denoising application executed successfully.
